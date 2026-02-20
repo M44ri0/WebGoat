@@ -3,6 +3,7 @@ package org.owasp.webgoat.lessons.pathtraversal;
 import static org.springframework.http.MediaType.ALL_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import org.apache.commons.io.FilenameUtils;
 import org.owasp.webgoat.container.assignments.AssignmentHints;
 import org.owasp.webgoat.container.assignments.AttackResult;
 import org.owasp.webgoat.container.session.WebSession;
@@ -33,6 +34,7 @@ public class ProfileUploadRemoveUserInput extends ProfileUploadBase {
   @ResponseBody
   public AttackResult uploadFileHandler(
       @RequestParam("uploadedFileRemoveUserInput") MultipartFile file) {
-    return super.execute(file, file.getOriginalFilename());
+    String fileName = FilenameUtils.getName(file.getOriginalFilename());
+    return super.execute(file, fileName);
   }
 }
