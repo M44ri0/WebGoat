@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.security.SecureRandom;
 import java.util.Base64;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -91,10 +92,13 @@ public class ProfileUploadRetrieval extends AssignmentEndpoint {
     try {
       var id = request.getParameter("id");
       String safeId = FilenameUtils.getName(id);
+      SecureRandom secureRandom = new SecureRandom();
+      String randomCatId = String.valueOf(secureRandom.nextInt(10) + 1);
+
       var catPicture =
-          new File(catPicturesDirectory, (safeId == null ? RandomUtils.nextInt(1, 11) : safeId) + ".jpg");
-      if(!catPicture.getCanonicalPath().startsWith(catPicturesDirectory.getCanonicalPath())) {
-        return ResponseEntity.badRequest()
+          new File(catPicturesDirectory, (safeId == null ? randomCatId : safeId) + ".jpg");
+
+      if(!catPicture.getCanonicalPath().startsWith(catPicturesDirectory.getCanonicalPath())) {        return ResponseEntity.badRequest()
             .body("Illegal file path, access is not allowed");
       }
 
