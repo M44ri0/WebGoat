@@ -45,6 +45,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProfileUploadRetrieval extends AssignmentEndpoint {
 
   private final File catPicturesDirectory;
+  // Asegurar numero aleatorio de forma segura
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   public ProfileUploadRetrieval(@Value("${webgoat.server.directory}") String webGoatHomeDirectory) {
     this.catPicturesDirectory = new File(webGoatHomeDirectory, "/PathTraversal/" + "/cats");
@@ -92,13 +94,14 @@ public class ProfileUploadRetrieval extends AssignmentEndpoint {
     try {
       var id = request.getParameter("id");
       String safeId = FilenameUtils.getName(id);
-      SecureRandom secureRandom = new SecureRandom();
-      String randomCatId = String.valueOf(secureRandom.nextInt(10) + 1);
+      
+      String randomCatId = String.valueOf(SECURE_RANDOM.nextInt(10) + 1);
 
       var catPicture =
           new File(catPicturesDirectory, (safeId == null ? randomCatId : safeId) + ".jpg");
 
-      if(!catPicture.getCanonicalPath().startsWith(catPicturesDirectory.getCanonicalPath())) {        return ResponseEntity.badRequest()
+      if(!catPicture.getCanonicalPath().startsWith(catPicturesDirectory.getCanonicalPath())) {
+        return ResponseEntity.badRequest()
             .body("Illegal file path, access is not allowed");
       }
 
