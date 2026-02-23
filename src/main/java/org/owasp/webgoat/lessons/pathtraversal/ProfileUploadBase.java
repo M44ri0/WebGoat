@@ -41,6 +41,11 @@ public class ProfileUploadBase extends AssignmentEndpoint {
     try {
       String safeFile = FilenameUtils.getName(fullName);
       var uploadedFile = new File(uploadDirectory, safeFile);
+      
+      if(!uploadedFile.getCanonicalPath().startsWith(uploadDirectory.getCanonicalPath())) {
+        throw new IOException("Illegal file path, access is not allowed");
+      }
+      
       uploadedFile.createNewFile();
       FileCopyUtils.copy(file.getBytes(), uploadedFile);
 
