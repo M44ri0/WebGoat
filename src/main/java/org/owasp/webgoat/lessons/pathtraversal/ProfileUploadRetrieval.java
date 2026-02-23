@@ -7,10 +7,13 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.security.SecureRandom;
 import java.util.Base64;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.owasp.webgoat.container.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.container.assignments.AssignmentHints;
@@ -42,6 +45,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProfileUploadRetrieval extends AssignmentEndpoint {
 
   private final File catPicturesDirectory;
+  // Asegurar numero aleatorio de forma segura
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   public ProfileUploadRetrieval(@Value("${webgoat.server.directory}") String webGoatHomeDirectory) {
     this.catPicturesDirectory = new File(webGoatHomeDirectory, "/PathTraversal/" + "/cats");
@@ -88,8 +93,17 @@ public class ProfileUploadRetrieval extends AssignmentEndpoint {
     }
     try {
       var id = request.getParameter("id");
+      String safeId = FilenameUtils.getName(id);
+      
+      String randomCatId = String.valueOf(SECURE_RANDOM.nextInt(10) + 1);
+
       var catPicture =
-          new File(catPicturesDirectory, (id == null ? RandomUtils.nextInt(1, 11) : id) + ".jpg");
+          new File(catPicturesDirectory, (safeId == null ? randomCatId : safeId) + ".jpg");
+
+      if(!catPicture.getCanonicalPath().startsWith(catPicturesDirectory.getCanonicalPath())) {
+        return ResponseEntity.badRequest()
+            .body("Illegal file path, access is not allowed");
+      }
 
       if (catPicture.getName().toLowerCase().contains("path-traversal-secret.jpg")) {
         return ResponseEntity.ok()

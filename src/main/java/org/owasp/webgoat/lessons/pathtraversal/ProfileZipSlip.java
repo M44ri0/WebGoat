@@ -14,6 +14,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.io.FilenameUtils;
 import org.owasp.webgoat.container.assignments.AssignmentHints;
 import org.owasp.webgoat.container.assignments.AttackResult;
 import org.owasp.webgoat.container.session.WebSession;
@@ -63,7 +65,8 @@ public class ProfileZipSlip extends ProfileUploadBase {
     var currentImage = getProfilePictureAsBase64();
 
     try {
-      var uploadedZipFile = tmpZipDirectory.resolve(file.getOriginalFilename());
+      String safeZip = FilenameUtils.getName(file.getOriginalFilename());
+      var uploadedZipFile = tmpZipDirectory.resolve(safeZip);
       FileCopyUtils.copy(file.getBytes(), uploadedZipFile.toFile());
 
       ZipFile zip = new ZipFile(uploadedZipFile.toFile());
@@ -71,6 +74,20 @@ public class ProfileZipSlip extends ProfileUploadBase {
       while (entries.hasMoreElements()) {
         ZipEntry e = entries.nextElement();
         File f = new File(tmpZipDirectory.toFile(), e.getName());
+        
+        if(!f.getCanonicalPath().startsWith(tmpZipDirectory.toFile().getCanonicalPath())) {
+          throw new IOException("Illegal file path, access is not allowed");
+        }
+        
+        if (e.isDirectory()) {
+          f.mkdirs();
+        } else {
+          f.getParentFile().mkdirs();
+          try (InputStream is = zip.getInputStream(e)) {
+            Files.copy(is, f.toPath(), StandardCopyOption.REPLACE_EXISTING);
+          }
+        }
+
         InputStream is = zip.getInputStream(e);
         Files.copy(is, f.toPath(), StandardCopyOption.REPLACE_EXISTING);
       }

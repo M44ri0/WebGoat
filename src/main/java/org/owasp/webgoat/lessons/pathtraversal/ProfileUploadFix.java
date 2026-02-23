@@ -3,6 +3,7 @@ package org.owasp.webgoat.lessons.pathtraversal;
 import static org.springframework.http.MediaType.ALL_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import org.apache.commons.io.FilenameUtils;
 import org.owasp.webgoat.container.assignments.AssignmentHints;
 import org.owasp.webgoat.container.assignments.AttackResult;
 import org.owasp.webgoat.container.session.WebSession;
@@ -36,7 +37,13 @@ public class ProfileUploadFix extends ProfileUploadBase {
   public AttackResult uploadFileHandler(
       @RequestParam("uploadedFileFix") MultipartFile file,
       @RequestParam(value = "fullNameFix", required = false) String fullName) {
-    return super.execute(file, fullName != null ? fullName.replace("../", "") : "");
+    String safeName = "";
+
+    if(fullName != null) {
+      safeName = FilenameUtils.getName(fullName);
+    }
+    
+    return super.execute(file, safeName);
   }
 
   @GetMapping("/PathTraversal/profile-picture-fix")

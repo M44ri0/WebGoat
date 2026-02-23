@@ -3,6 +3,7 @@ package org.owasp.webgoat.lessons.pathtraversal;
 import static org.springframework.http.MediaType.ALL_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import org.apache.commons.io.FilenameUtils;
 import org.owasp.webgoat.container.assignments.AssignmentHints;
 import org.owasp.webgoat.container.assignments.AttackResult;
 import org.owasp.webgoat.container.session.WebSession;
@@ -36,7 +37,8 @@ public class ProfileUpload extends ProfileUploadBase {
   public AttackResult uploadFileHandler(
       @RequestParam("uploadedFile") MultipartFile file,
       @RequestParam(value = "fullName", required = false) String fullName) {
-    return super.execute(file, fullName);
+    String fileName = FilenameUtils.getName(fullName);
+    return super.execute(file, fileName);
   }
 
   @GetMapping("/PathTraversal/profile-picture")
