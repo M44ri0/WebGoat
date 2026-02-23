@@ -92,8 +92,7 @@ public class ProfileUploadRetrieval extends AssignmentEndpoint {
       var id = request.getParameter("id");
       String safeId = FilenameUtils.getName(id);
       var catPicture =
-          new File(catPicturesDirectory, (id == null ? RandomUtils.nextInt(1, 11) : id) + ".jpg");
-
+          new File(catPicturesDirectory, (safeId == null ? RandomUtils.nextInt(1, 11) : safeId) + ".jpg");
       if(!catPicture.getCanonicalPath().startsWith(catPicturesDirectory.getCanonicalPath())) {
         return ResponseEntity.badRequest()
             .body("Illegal file path, access is not allowed");
